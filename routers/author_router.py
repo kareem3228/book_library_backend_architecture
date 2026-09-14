@@ -31,6 +31,6 @@ async def delete_all_authors_endpoint(admin:User=Depends(require_admin), session
 async def find_all_authors_endpoint(session:AsyncSession=Depends(get_db)):
     return await find_all_author(session=session)
 
-@router.patch("/author/{id}",status_code=200)
+@router.patch("/author/{id}/deactivate",status_code=200)
 async def deactivate_author_endpoint(id:int,admin:User=Depends(require_admin),session:AsyncSession=Depends(get_db)):
     return await deactivate_author(author_id=id,session=session)

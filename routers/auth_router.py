@@ -28,7 +28,7 @@ async def login_user_endpoint(
     return await login_user(session, data)
 
 @router.delete("/delete",status_code=204)
-async def delete_all_users_endpoint(session:AsyncSession=Depends(get_db)):
+async def delete_all_users_endpoint(session:AsyncSession=Depends(get_db),admin:User=Depends(require_admin)):
     await delete_user(session=session)
 
 @router.patch("/user/deactivate",status_code=200)

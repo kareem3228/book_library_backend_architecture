@@ -8,15 +8,19 @@ from authentication.jwt import create_access_token
 from schemas.user_schema import Token,roleupdate
 from sqlalchemy import delete
 from enums.user_enums import UserRole
+from sqlalchemy.exc import IntegrityError
 async def create_user(session:AsyncSession,data:CreateUser):
-    hashed_password=hash_password(data.password)
-    user=User(name=data.name,
-              password_hash=hashed_password
+    try:
+        hashed_password=hash_password(data.password)
+        user=User(name=data.name,
+                password_hash=hashed_password
 
-    )
-    session.add(user)
-    await session.commit()
-    return user
+        )
+        session.add(user)
+        await session.commit()
+        return user
+    except IntegrityError:
+        raise HTTPException(status_code=409,detail="duplicated name")
 
 async def login_user(session:AsyncSession,data:LoginUser):
     result=await session.execute(select(User).where(User.name==data.name))
