@@ -20,8 +20,9 @@ async def test_ai_recommendation_gemini(client,db):
             "Authorization": f"Bearer {token}"
         }
     )
+    data=response.json()
     assert response.status_code==200
-
+    assert data["response"]
 @pytest.mark.asyncio
 async def test_ai_recommendation_openrouter(client,db):
     await create_member(db=db)
@@ -42,5 +43,7 @@ async def test_ai_recommendation_openrouter(client,db):
             "Authorization": f"Bearer {token}"
         }
     )
+    data=response.json()
     assert response.status_code==200
+    assert data["response"]
 
