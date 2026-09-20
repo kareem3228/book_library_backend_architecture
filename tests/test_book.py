@@ -416,3 +416,45 @@ async def test_admin_cannot_deactivate_nonexistent_book(client, db):
     )
 
     assert response.status_code == 404
+
+@pytest.mark.asyncio
+async def test_find_book_name(client,db):
+    book=await create_book(db)
+    book2=await create_book(db)
+    response = await client.get(
+        "/book/name",
+        params={"name": "Test Book"}
+    )
+    assert response.status_code == 200
+
+@pytest.mark.asyncio
+async def test_find_book_name_case_sensetive(client,db):
+    book=await create_book(db)
+    response = await client.get(
+        "/book/name",
+        params={"name": "test book"}
+    )
+    data=response.json()
+    assert data[0]["title"]=='Test Book'
+    assert response.status_code == 200
+
+
+@pytest.mark.asyncio
+async def test_find_book_name_not_complete(client,db):
+    book=await create_book(db)
+    response = await client.get(
+        "/book/name",
+        params={"name": "test"}
+    )
+    data=response.json()
+    assert data[0]["title"]=='Test Book'
+    assert response.status_code == 200
+@pytest.mark.asyncio
+async def test_find_wrong_book_name(client,db):
+    book=await create_book(db)
+    response = await client.get(
+        "/book/name",
+        params={"name": "balls"}
+    )
+    data=response.json()
+    assert response.status_code == 404
