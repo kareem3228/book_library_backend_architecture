@@ -2,7 +2,7 @@ from fastapi import APIRouter,Depends
 from schemas.book_schema import BookCreate,BookUpdate,BookSummery
 from sqlalchemy.ext.asyncio import AsyncSession
 from database import get_db
-from services.book_service import create_book,update_book,delete_book,find_book,find_author_books,find_all_books,delete_all_books,deactivate_book
+from services.book_service import create_book,update_book,delete_book,find_book,find_author_books,find_all_books,delete_all_books,deactivate_book,find_book_name
 from authentication.dependencies import require_admin,get_current_user
 from models.users_model import User
 router=APIRouter()
@@ -39,3 +39,7 @@ async def find_all_nooks_endpoint(session:AsyncSession=Depends(get_db)):
 @router.patch("/book/{id}",status_code=200)
 async def deactivate_book_endpoint(id:int,admin:User=Depends(require_admin),session:AsyncSession=Depends(get_db)):
     return await deactivate_book(book_id=id,session=session)
+
+@router.get("/book/name",status_code=200,response_model=list[BookSummery])
+async def find_book_name_endpoint(name:str,session:AsyncSession=Depends(get_db)):
+    return await find_book_name(name=name,session=session)

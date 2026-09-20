@@ -6,7 +6,7 @@ from sqlalchemy import select,delete
 from fastapi import HTTPException
 
 async def create_book(session:AsyncSession,BookCreate:BookCreate,author_id:int):
-    stmnt=select(Author).where(Author.id==author_id)
+    stmnt=select(Author).where(Author.id==author_id,Author.is_active==True)
     result=await session.execute(stmnt)
     author=result.scalar()
     if author is None:
@@ -20,7 +20,7 @@ async def create_book(session:AsyncSession,BookCreate:BookCreate,author_id:int):
     return book
 
 async def find_book(session:AsyncSession,id:int):
-    stmnt=select(Book).where(Book.id==id)
+    stmnt=select(Book).where(Book.id==id,Book.is_active==True)
     result=await session.execute(stmnt)
     book=result.scalar()
     if book is None:
@@ -49,7 +49,7 @@ async def delete_book(session:AsyncSession,id:int):
     await session.commit()
 
 async def find_author_books(session:AsyncSession,author_id:int):
-    stmnt=select(Book).join(Book.author).where(Author.id==author_id)
+    stmnt=select(Book).where(Book.author_id==author_id,Book.is_active==True)
     result= await session.execute(stmnt)
     books=result.scalars().all()
     if not books:
@@ -57,7 +57,7 @@ async def find_author_books(session:AsyncSession,author_id:int):
     return books
 
 async def find_all_books(session:AsyncSession):
-    stmt=select(Book)
+    stmt=select(Book).where(Book.is_active==True)
     result=await session.execute(stmt)
     books=result.scalars().all()
     if not books:
@@ -79,3 +79,9 @@ async def deactivate_book(book_id:int,session:AsyncSession):
     book.is_active=False
     await session.commit()
 
+async def find_book_name(name:str,session:AsyncSession):
+    result=await session.execute(select(Book).where(Book.title.ilike(f"%{name}%"),Book.is_active==True))
+    books=result.scalars().all()
+    if not books:
+        raise HTTPException(status_code=404,detail="book not found")
+    return books
