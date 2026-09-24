@@ -6,12 +6,12 @@ from models.users_model import User
 from fastapi import Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 from database import get_db
+from fastapi.responses import StreamingResponse
 router=APIRouter()
 
-@router.post("/library_assistant/ai/gemini",status_code=200,response_model=AiResponse)
+@router.post("/library_assistant/ai/gemini",status_code=200)
 async def get_recommendation_endpoint(preference:UserPrefrence,user:User=Depends(get_current_user),session:AsyncSession=Depends(get_db)):
-    return await get_assistance_gemini(user_preference=preference.preference,session=session)
-
+    return StreamingResponse(get_assistance_gemini(user_preference=preference.preference,session=session),media_type="text/plain")
 
 
     
