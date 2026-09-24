@@ -1,7 +1,7 @@
 import pytest
-from tests.factory import create_member
+from tests.factory import create_member,create_book
 @pytest.mark.asyncio
-async def test_ai_recommendation_gemini(client,db):
+async def test_ai_assistant_gemini_recommendation(client,db):
     await create_member(db=db)
     response = await client.post(
         "/login",
@@ -10,23 +10,25 @@ async def test_ai_recommendation_gemini(client,db):
             "password": "member1"
         }
     )
-    print(response.status_code)
-    print(response.json())
     token=response.json()["access_token"]
-    response= await client.post(
-        "/recommendation/ai/gemini",
-        json={"preference":"recommend me a fantasy book"},
+    async with client.stream(
+        "post",
+        "/library_assistant/ai/gemini",
+        json={"preference":"recommend me a harry potter book"},
         headers={
-            "Authorization": f"Bearer {token}"
+            "Authorization":f"Bearer {token}"
         }
-    )
-    data=response.json()
-    assert response.status_code==200
-    assert data["response"]
+    )as response:
+        assert response.status_code==200
+        chunks=""
+        async for chunk in response.aiter_text():
+            chunks+=chunk
+    assert chunks !=""
 
 @pytest.mark.asyncio
-async def test_ai_assistant_gemini(client,db):
+async def test_ai_assistant_gemini_test_tool(client,db):
     await create_member(db=db)
+    await create_book(db=db)
     response = await client.post(
         "/login",
         data={
@@ -35,19 +37,25 @@ async def test_ai_assistant_gemini(client,db):
         }
     )
     token=response.json()["access_token"]
-    response= await client.post(
+    async with client.stream(
+        "post",
         "/library_assistant/ai/gemini",
-        json={"preference":"find me a harry potter book"},
+        json={"preference":"find me a book called test book"},
         headers={
-            "Authorization": f"Bearer {token}"
+            "Authorization":f"Bearer {token}"
         }
-    )
-    data=response.json()
-    assert response.status_code==200
+    )as response:
+        assert response.status_code==200
+        chunks=""
+        async for chunk in response.aiter_text():
+            chunks+=chunk
+    assert chunks !=""
+
 
 @pytest.mark.asyncio
 async def test_ai_assistant_gemini_no_book_found(client,db):
     await create_member(db=db)
+    await create_book(db=db)
     response = await client.post(
         "/login",
         data={
@@ -56,12 +64,12 @@ async def test_ai_assistant_gemini_no_book_found(client,db):
         }
     )
     token=response.json()["access_token"]
-    response= await client.post(
+    async with client.stream(
+        "post",
         "/library_assistant/ai/gemini",
-        json={"preference":"find me a twighlight book"},
+        json={"preference":"find me a book called twighlight"},
         headers={
-            "Authorization": f"Bearer {token}"
+            "Authorization":f"Bearer {token}"
         }
-    )
-    data=response.json()
-    assert response.status_code==404
+    )as response:
+        assert response.status_code==404
