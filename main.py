@@ -6,6 +6,9 @@ from routers.rental_router import router as rental_router
 from contextlib import asynccontextmanager
 from database import engine,Base
 from routers.ai_router import router as ai_router
+import logging
+
+logging.basicConfig(level=logging.INFO)
 
 app=FastAPI()
 app.include_router(ai_router)
