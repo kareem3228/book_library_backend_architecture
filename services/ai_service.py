@@ -31,6 +31,9 @@ async def get_assistance_gemini(user_preference:str,session:AsyncSession):
                 yield(event.delta.text)
             elif event.delta.type=="arguments_delta":
                 arguments+=event.delta.arguments
+        elif event.event_type=="error":
+            yield "there was an error during the stream"
+            return
         elif event.event_type=="interaction.completed":
             input_tokens=event.interaction.usage.total_input_tokens
             output_tokens=event.interaction.usage.total_output_tokens
@@ -69,6 +72,9 @@ async def get_assistance_gemini(user_preference:str,session:AsyncSession):
         async for event in interaction:
             if event.event_type == "step.delta" and event.delta.type == "text":
                 yield(event.delta.text)
+            elif event.event_type=="error":
+                yield "there was an error during the stream"
+                return
             elif event.event_type=="interaction.completed":
                 second_input_tokens=event.interaction.usage.total_input_tokens
                 second_output_tokens=event.interaction.usage.total_output_tokens
